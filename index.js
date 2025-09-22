@@ -17,6 +17,22 @@ app.get("/",(req,res)=>{
     res.send("Server is running and will video chat feature will come soon");
 });
 
+io.on("connection",(socket)=>{
+    socket.emit("me",socket.id); // me is the message
+
+    socket.on("disconnect",()=>{
+        socket.broadcast.emit("callended");
+    });
+
+    socket.on("calluser",({userToCall,signalData,from,name})=>{
+        io.to(userToCall).emit("calluser",{signal:signalData,from,name});
+    })
+
+    socket.on("answercall",(data)=>{
+        io.to(data.to).emit("callaccepted",data.signal);
+    })
+});
+
 server.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`);
 });
